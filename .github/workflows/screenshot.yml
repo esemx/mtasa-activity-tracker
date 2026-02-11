@@ -1,0 +1,36 @@
+name: Update Dashboard Screenshot
+
+on:
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  take-screenshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install shot-scraper
+        run: pip install shot-scraper
+
+      - name: Take screenshot of dashboard
+        run: |
+          WEBSITE_URL="https://mta-sa-analytics.streamlit.app/" 
+          
+          shot-scraper "$WEBSITE_URL" --wait 10 --output docs/dashboard_screenshot.png --quality 75 --selector "div.stApp"
+
+      - name: Create 'docs' directory if it doesn't exist
+        run: mkdir -p docs
+
+      - name: Commit and Push Screenshot
+        run: |
+          git config --global user.name "Screenshot Bot"
+          git config --global user.email "screenshot@noreply.github.com"
+          git add docs/dashboard_screenshot.png
+          git commit -m "docs: Update live dashboard screenshot [$(date +'%Y-%m-%d %H:%M')]" || exit 0
+          git push
