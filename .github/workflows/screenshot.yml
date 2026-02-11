@@ -30,10 +30,11 @@ jobs:
           WEBSITE_URL="https://mta-sa-analytics.streamlit.app/" 
           
           shot-scraper "$WEBSITE_URL" \
-            --wait 15 \
+            --wait 25000 \
+            --width 1280 \
+            --height 1000 \
             --output docs/dashboard_screenshot.png \
-            --quality 75 \
-            --selector "div.stApp"
+            --quality 75
 
       - name: Create 'docs' directory if it doesn't exist
         run: mkdir -p docs
