@@ -1,0 +1,35 @@
+name: MTA:SA Stats Tracker
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scrape-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Execute Scraper
+        run: python collect_data.py
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "Bot"
+          git config --global user.email "bot@noreply.github.com"
+          git add data/mta_history.csv
+          git commit -m "Update time-series dataset: $(date)" || exit 0
+          git push
