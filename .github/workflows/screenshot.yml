@@ -15,14 +15,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install shot-scraper
-        run: pip install shot-scraper
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install shot-scraper and playwright
+        run: |
+          pip install shot-scraper
+          shot-scraper install
 
       - name: Take screenshot of dashboard
         run: |
           WEBSITE_URL="https://mta-sa-analytics.streamlit.app/" 
           
-          shot-scraper "$WEBSITE_URL" --wait 10 --output docs/dashboard_screenshot.png --quality 75 --selector "div.stApp"
+          shot-scraper "$WEBSITE_URL" \
+            --wait 15 \
+            --output docs/dashboard_screenshot.png \
+            --quality 75 \
+            --selector "div.stApp"
 
       - name: Create 'docs' directory if it doesn't exist
         run: mkdir -p docs
