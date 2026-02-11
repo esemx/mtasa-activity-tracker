@@ -27,6 +27,14 @@ if df.empty:
     st.error("No data available. Waiting for the first update from the servers.")
     st.stop()
 
+st.sidebar.header("Forecast Settings")
+forecast_hours = st.sidebar.selectbox(
+    "Prediction Length",
+    options=[24, 72, 168],
+    format_func=lambda x: "24 Hours" if x == 24 else ("3 Days" if x == 72 else "7 Days"),
+    index=0
+)
+
 st.markdown("### Current Status")
 
 last_row = df.iloc[-1]
@@ -69,7 +77,7 @@ with col4:
 
 st.divider()
 
-st.markdown("### Traffic Forecast")
+st.markdown(f"### Traffic Forecast ({forecast_hours}h)")
 
 if len(df) < 20:
     st.info(f"More data is required to generate a forecast. (Currently {len(df)}/20 points).")
@@ -77,15 +85,15 @@ if len(df) < 20:
     fig.update_layout(template="plotly_dark", xaxis_title="Time", yaxis_title="Players")
     st.plotly_chart(fig, width="stretch")
 else:
-    st.markdown("""
-    This chart shows the predicted player count for the next 24 hours based on recent trends. 
+    st.markdown(f"""
+    This chart shows the predicted player count for the next {forecast_hours} hours based on recent trends. 
     The dashed line represents the forecast, and the shaded area shows the expected range.
     """)
     
-    with st.spinner('Calculating 24h forecast...'):
+    with st.spinner(f'Calculating {forecast_hours}h forecast...'):
         m = Prophet(daily_seasonality=True, yearly_seasonality=False, weekly_seasonality=False)
         m.fit(df)
-        future = m.make_future_dataframe(periods=24, freq='h')
+        future = m.make_future_dataframe(periods=forecast_hours, freq='h')
         forecast = m.predict(future)
 
         last_hist_val = df.iloc[-1]['y']
@@ -93,7 +101,7 @@ else:
         trend_diff = future_val - last_hist_val
         trend_direction = "increase" if trend_diff > 0 else "decrease"
         
-        st.info(f"Summary: The model expects a net {trend_direction} of approximately {abs(int(trend_diff))} players over the next 24 hours.")
+        st.info(f"Summary: The model expects a net {trend_direction} of approximately {abs(int(trend_diff))} players over the next {forecast_hours} hours.")
 
         fig = go.Figure()
 
